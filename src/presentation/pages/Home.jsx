@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect } from "react";
 import ExpenseChart from "../components/ExpenseChart";
 import ExpensesAside from "../components/ExpensesAside";
 import { AuthContext } from "../contexts/AuthContext";
@@ -75,10 +75,51 @@ const styles = {
   container: {
     height: "100vh",
     display: "flex",
-    flexDirection: "column",
     background: "#f0f2f5",
     fontFamily: "Inter, sans-serif",
   },
+
+  /* Sidebar */
+  sidebar: {
+    width: "240px",
+    backgroundColor: "#cbb3ff",
+    color: "#121111",
+    display: "flex",
+    flexDirection: "column",
+    padding: "20px",
+    boxShadow: "2px 0 8px rgba(0,0,0,0.1)",
+  },
+  sidebarTitle: {
+    fontSize: "20px",
+    fontWeight: "700",
+    marginBottom: "30px",
+    textAlign: "center",
+  },
+  nav: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  link: {
+    color: "#1f1f1f",
+    textDecoration: "none",
+    fontSize: "16px",
+    fontWeight: "500",
+    padding: "8px 10px",
+    borderRadius: "8px",
+    transition: "all 0.2s ease",
+  },
+  linkHover: {
+    backgroundColor: "#b497ff",
+  },
+
+  /* Main content area */
+  mainContent: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+  },
+
   header: {
     background: "#7D5BA6",
     color: "#fff",
@@ -108,6 +149,7 @@ const styles = {
     justifyContent: "center",
     fontWeight: "bold",
   },
+
   content: {
     display: "flex",
     flex: 1,
