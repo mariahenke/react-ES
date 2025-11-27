@@ -1,10 +1,12 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import ExpenseChart from "../components/ExpenseChart";
 import ExpensesAside from "../components/ExpensesAside";
 import { AuthContext } from "../contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const { user, loading } = useContext(AuthContext);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     document.title = "Home | Savify";
@@ -22,23 +24,48 @@ export default function Home() {
 
   return (
     <div style={styles.container}>
-      {/* Cabeçalho */}
-      <header style={styles.header}>
-        <div style={styles.menuIcon}>☰</div>
+      {/* Sidebar */}
+      {menuOpen && (
+        <aside style={styles.sidebar}>
+          <h2 style={styles.sidebarTitle}>Savify</h2>
+          <nav style={styles.nav}>
+            <Link to="/goals" style={styles.link}>
+              🎯 Metas Financeiras
+            </Link>
 
-        <div style={styles.userInfo}>
-          <h2>Olá, {user.name}!</h2>
-          <div style={styles.avatar}>{firstLetter}</div>
+            <Link to="/" style={styles.link}>
+              🚪 Sair
+            </Link>
+          </nav>
+        </aside>
+      )}
+
+      {/* Conteúdo principal */}
+      <div style={styles.mainContent}>
+        {/* Header */}
+        <header style={styles.header}>
+          <div
+            style={styles.menuIcon}
+            onClick={() => setMenuOpen(!menuOpen)}
+            title="Abrir/Fechar menu"
+          >
+            ☰
+          </div>
+
+          <div style={styles.userInfo}>
+            <h2>Olá, {user.name}!</h2>
+            <div style={styles.avatar}>{firstLetter}</div>
+          </div>
+        </header>
+
+        {/* Layout principal */}
+        <div style={styles.content}>
+          <main style={styles.main}>
+            <ExpenseChart />
+          </main>
+
+          <ExpensesAside />
         </div>
-      </header>
-
-      {/* Layout principal */}
-      <div style={styles.content}>
-        <main style={styles.main}>
-          <ExpenseChart />
-        </main>
-
-        <ExpensesAside />
       </div>
     </div>
   );
