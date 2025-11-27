@@ -6,7 +6,7 @@ const api = axios.create({
 
 export const expenseApi = {
   create: (data) => api.post("/", data),
-  getAll: () => api.get("/"),
+  getAll: (userId) => api.get(`/${userId}`),
   getById: (id) => api.get(`/${id}`),
   update: (id, data) => api.put(`/${id}`, data),
   delete: (id) => api.delete(`/${id}`),

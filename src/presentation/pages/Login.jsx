@@ -13,9 +13,13 @@ export default function Login() {
 
   const handleLogin = async () => {
     const service = new AuthService();
+
     try {
       const response = await loginUser(service, email, password);
+
       localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+
       toast.success("Login realizado com sucesso!");
       navigate("/home");
     } catch (error) {
@@ -25,86 +29,103 @@ export default function Login() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#f3f4f6",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "#c4b5fd",
-          borderRadius: "1rem",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-          padding: "2rem",
-          width: "24rem",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "1.8rem",
-            fontWeight: "600",
-            textAlign: "center",
-            color: "#1f2937",
-            marginBottom: "1.5rem",
-          }}
-        >
-          Login
-        </h1>
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h1 style={styles.title}>Bem-vindo</h1>
+        <p style={styles.subtitle}>Faça login para continuar</p>
 
-        {/* Campo de email */}
-        <Input
-          label="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <div style={styles.form}>
+          <Input
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        {/* Campo de senha */}
-        <Input
-          label="Senha"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <Input
+            label="Senha"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        {/* 🔹 Link de esqueci minha senha */}
-        <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-          <Link
-            to="/reset-password"
-            style={{
-              color: "#1d4ed8",
-              textDecoration: "none",
-              fontSize: "0.9rem",
-              fontWeight: "500",
-            }}
-          >
-            Esqueci minha senha?
-          </Link>
+          <div style={{ textAlign: "right" }}>
+            <Link to="/reset-password" style={styles.linkSmall}>
+              Esqueci minha senha
+            </Link>
+          </div>
+
+          <Button text="Entrar" onClick={handleLogin} />
         </div>
 
-        {/* Botão de entrar */}
-        <Button text="Entrar" onClick={handleLogin} />
-
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: "1rem",
-            fontSize: "0.9rem",
-            color: "#374151",
-          }}
-        >
-          Não possui conta?{" "}
-          <Link
-            to="/register"
-            style={{ color: "#1d4ed8", textDecoration: "none" }}
-          >
-            Registrar
+        <p style={styles.bottomText}>
+          Não tem conta?{" "}
+          <Link to="/register" style={styles.linkBold}>
+            Criar conta
           </Link>
         </p>
       </div>
     </div>
   );
 }
+
+const styles = {
+  container: {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "linear-gradient(135deg, #f4f4fc, #e9e7ff)",
+    padding: "20px",
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: "420px",
+    backgroundColor: "#fff",
+    borderRadius: "1.2rem",
+    padding: "2.5rem",
+    boxShadow: "0 8px 25px rgba(0,0,0,0.10)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "1.5rem",
+    animation: "fadeIn 0.3s ease",
+  },
+
+  title: {
+    fontSize: "2rem",
+    fontWeight: "700",
+    color: "#1f2937",
+    textAlign: "center",
+  },
+
+  subtitle: {
+    fontSize: "1rem",
+    color: "#6b7280",
+    textAlign: "center",
+    marginTop: "-1rem",
+  },
+
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
+  },
+
+  linkSmall: {
+    fontSize: "0.85rem",
+    color: "#6366f1",
+    textDecoration: "none",
+  },
+
+  bottomText: {
+    textAlign: "center",
+    color: "#6b7280",
+    fontSize: "0.95rem",
+  },
+
+  linkBold: {
+    color: "#4f46e5",
+    fontWeight: "600",
+    textDecoration: "none",
+  },
+};

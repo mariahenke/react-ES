@@ -1,28 +1,43 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import ExpenseChart from "../components/ExpenseChart";
 import ExpensesAside from "../components/ExpensesAside";
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function Home() {
+  const { user, loading } = useContext(AuthContext);
+
   useEffect(() => {
     document.title = "Home | Savify";
   }, []);
 
+  if (loading) {
+    return <div style={{ padding: 20 }}>Carregando...</div>;
+  }
+
+  if (!user) {
+    return <div style={{ padding: 20 }}>Usuário não autenticado.</div>;
+  }
+
+  const firstLetter = user.name ? user.name.charAt(0).toUpperCase() : "?";
+
   return (
     <div style={styles.container}>
-      {/* Header */}
+      {/* Cabeçalho */}
       <header style={styles.header}>
         <div style={styles.menuIcon}>☰</div>
+
         <div style={styles.userInfo}>
-          <h2>Olá, Usuário!</h2>
-          <div style={styles.avatar}>👤</div>
+          <h2>Olá, {user.name}!</h2>
+          <div style={styles.avatar}>{firstLetter}</div>
         </div>
       </header>
 
-      {/* Main layout */}
+      {/* Layout principal */}
       <div style={styles.content}>
         <main style={styles.main}>
           <ExpenseChart />
         </main>
+
         <ExpensesAside />
       </div>
     </div>
@@ -64,6 +79,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    fontWeight: "bold",
   },
   content: {
     display: "flex",

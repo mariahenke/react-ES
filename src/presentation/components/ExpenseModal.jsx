@@ -7,8 +7,9 @@ export default function ExpenseModal({ open, onClose, onSave, expense }) {
     value: "",
     expense_category_id: "",
     description: "",
-    expense_date: new Date().toISOString().slice(0, 10), // data atual por padrão
+    expense_date: new Date().toISOString().slice(0, 10),
   });
+
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -42,53 +43,81 @@ export default function ExpenseModal({ open, onClose, onSave, expense }) {
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <h3>{expense ? "Editar Despesa" : "Nova Despesa"}</h3>
+        <h2 style={styles.title}>{expense ? "Editar Despesa" : "Nova Despesa"}</h2>
+
         <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Nome"
-            required
-          />
-          <input
-            name="value"
-            type="number"
-            value={form.value}
-            onChange={handleChange}
-            placeholder="Valor"
-            required
-          />
-          <select
-            name="expense_category_id"
-            value={form.expense_category_id}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Selecione uma categoria</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <input
-            type="date"
-            name="expense_date"
-            value={form.expense_date}
-            onChange={handleChange}
-            required
-          />
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            placeholder="Descrição"
-          />
+          <div style={styles.inputGroup}>
+            <label>Nome</label>
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Nome da despesa"
+              required
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label>Valor</label>
+            <input
+              name="value"
+              type="number"
+              value={form.value}
+              onChange={handleChange}
+              placeholder="0,00"
+              required
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label>Categoria</label>
+            <select
+              name="expense_category_id"
+              value={form.expense_category_id}
+              onChange={handleChange}
+              required
+              style={styles.select}
+            >
+              <option value="">Selecione uma categoria</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label>Data</label>
+            <input
+              type="date"
+              name="expense_date"
+              value={form.expense_date}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label>Descrição</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Detalhes adicionais"
+              style={styles.textarea}
+            />
+          </div>
+
           <div style={styles.actions}>
-            <button type="submit">Salvar</button>
-            <button type="button" onClick={onClose}>
+            <button type="button" onClick={onClose} style={styles.cancelBtn}>
               Cancelar
+            </button>
+            <button type="submit" style={styles.saveBtn}>
+              Salvar
             </button>
           </div>
         </form>
@@ -97,26 +126,110 @@ export default function ExpenseModal({ open, onClose, onSave, expense }) {
   );
 }
 
+//
+//  STYLES
+//
+const sharedField = {
+  width: "100%",
+  padding: "12px",
+  borderRadius: "10px",
+  border: "1px solid #d5d5d5",
+  fontSize: "15px",
+  outline: "none",
+  transition: "0.2s ease",
+  background: "#fafafa",
+};
+
 const styles = {
   overlay: {
     position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: "rgba(0,0,0,0.5)",
+    inset: 0,
+    background: "rgba(0,0,0,0.45)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 999,
+    zIndex: 9999,
+    backdropFilter: "blur(3px)",
   },
-  modal: {
-    background: "#fff",
-    borderRadius: "10px",
-    padding: "20px",
-    minWidth: "400px",
-    boxShadow: "0 0 15px rgba(0,0,0,0.2)",
+
+modal: {
+  background: "white",
+  padding: "32px",
+  borderRadius: "18px",
+  width: "480px",
+  maxWidth: "90%",
+  boxShadow: "0px 12px 35px rgba(0,0,0,0.15)",
+  animation: "fadeIn 0.25s ease",
+  display: "flex",
+  flexDirection: "column",
+  gap: "20px",
+},
+
+
+  title: {
+    margin: "0 0 20px 0",
+    fontSize: "22px",
+    textAlign: "center",
+    color: "#333",
+    fontWeight: 600,
   },
-  form: { display: "flex", flexDirection: "column", gap: "10px" },
-  actions: { display: "flex", justifyContent: "flex-end", gap: "10px" },
+
+  form: { display: "flex", flexDirection: "column", gap: "18px" },
+
+  inputGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+
+  input: {
+    ...sharedField,
+  },
+
+  select: {
+    ...sharedField,
+    appearance: "none",
+    cursor: "pointer",
+    backgroundImage:
+      "linear-gradient(45deg, transparent 50%, #777 50%), linear-gradient(135deg, #777 50%, transparent 50%)",
+    backgroundPosition: "calc(100% - 20px) calc(50% - 3px), calc(100% - 15px) calc(50% - 3px)",
+    backgroundSize: "5px 5px, 5px 5px",
+    backgroundRepeat: "no-repeat",
+  },
+
+  textarea: {
+    ...sharedField,
+    minHeight: "80px",
+    resize: "none",
+  },
+
+  actions: {
+    marginTop: "10px",
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "10px",
+  },
+
+  cancelBtn: {
+    padding: "10px 18px",
+    background: "#f0f0f0",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "14px",
+    color: "#333",
+    transition: "0.3s",
+  },
+
+  saveBtn: {
+    padding: "10px 20px",
+    background: "#4f46e5",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontSize: "14px",
+    color: "white",
+    fontWeight: "600",
+    transition: "0.3s",
+  },
 };

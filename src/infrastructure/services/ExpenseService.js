@@ -1,8 +1,10 @@
 // src/infrastructure/services/ExpenseService.js
 import { expenseApi } from "../../api/expenseApi.js";
 
-export async function getExpenses() {
-  const response = await expenseApi.getAll();
+export async function getExpenses(userId) {
+  console.log('userId');
+  console.log(userId);
+  const response = await expenseApi.getAll(userId);
   return response.data;
 }
 

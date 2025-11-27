@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { getExpenses, getCategories } from "../../infrastructure/services/ExpenseService";
+import { AuthContext } from "../contexts/AuthContext";
 
 const DEFAULT_COLORS = [
   "#7D5BA6",
@@ -14,27 +15,26 @@ const DEFAULT_COLORS = [
 ];
 
 export default function ExpenseChart() {
+  const { user } = useContext(AuthContext);
   const [data, setData] = useState([]);
 
   useEffect(() => {
+    if (!user?.id) return; // garante que user existe
+
     async function loadData() {
       try {
         const [expenses, categories] = await Promise.all([
-          getExpenses(),
+          getExpenses(user.id),
           getCategories(),
         ]);
-
-        console.log("Expenses:", expenses);
-        console.log("Categories:", categories);
 
         const grouped = categories
           .map((cat, index) => {
             const matchedExpenses = expenses.filter((e) => e.category_id === cat.id);
-            const total = matchedExpenses.reduce((acc, e) => acc + parseFloat(e.value || 0), 0);
-
-            console.log(`Categoria: ${cat.name}`);
-            console.log("  Matched Expenses:", matchedExpenses);
-            console.log("  Total:", total);
+            const total = matchedExpenses.reduce(
+              (acc, e) => acc + parseFloat(e.value || 0),
+              0
+            );
 
             return {
               name: cat.name,
@@ -44,7 +44,6 @@ export default function ExpenseChart() {
           })
           .filter((g) => g.value > 0);
 
-        console.log("Grouped Data:", grouped);
         setData(grouped);
       } catch (err) {
         console.error("Erro ao carregar dados do gráfico:", err);
@@ -52,7 +51,7 @@ export default function ExpenseChart() {
     }
 
     loadData();
-  }, []);
+  }, [user]); // roda quando user estiver disponível
 
   if (!data.length) {
     return (
