@@ -3,26 +3,22 @@ import { authApi } from "../../api/authApi.js";
 
 export class AuthService extends IAuthService {
 
-  // === REGISTER =====================================================================
   async register(data) {
     const response = await authApi.register(data);
     return response.data; // { user, token }
   }
 
-  // === LOGIN =========================================================================
   async login(data) {
     const response = await authApi.login(data);
     return response.data; // { user, token }
   }
 
-  // === LOGOUT =========================================================================
   async logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     return true;
   }
 
-  // === GET CURRENT USER ===============================================================
   async getCurrentUser() {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -39,7 +35,6 @@ export class AuthService extends IAuthService {
     }
   }
 
-  // === REFRESH TOKEN (opcional) =======================================================
   async refreshToken() {
     try {
       const res = await authApi.refresh();

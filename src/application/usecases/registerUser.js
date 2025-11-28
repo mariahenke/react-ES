@@ -1,3 +1,3 @@
-export const registerUser = async (authService, name, email, password) => {
-  return await authService.register({ name, email, password });
+export const registerUser = async (authService, data) => {
+  return await authService.register(data);
 };

@@ -5,7 +5,7 @@ import { Input } from "../components/Input.jsx";
 import { Button } from "../components/Button.jsx";
 import { AuthService } from "../../infrastructure/services/AuthService.js";
 import { registerUser } from "../../application/usecases/registerUser.js";
-// import { ProfileService } from "../../infrastructure/services/ProfileService.js";
+import { getProfiles } from "../../infrastructure/services/ProfileService.js";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -20,8 +20,7 @@ export default function Register() {
   useEffect(() => {
     async function loadProfiles() {
       try {
-        const service = new ProfileService();
-        const data = await service.getProfiles();
+        const data = await getProfiles();
 
         if (Array.isArray(data)) setProfiles(data);
       } catch (err) {
@@ -40,9 +39,12 @@ export default function Register() {
         name,
         email,
         password,
-        birthdate,
-        profileId,
+        birth_date : birthdate,
+        profile_id: profileId,
       };
+
+      console.log('data');
+      console.log(data);
 
       const response = await registerUser(service, data);
 
@@ -91,7 +93,7 @@ export default function Register() {
           />
 
           {/* Select modernizado */}
-          {/* <div>
+          <div>
             <label style={styles.label}>Tipo de Perfil</label>
             <select
               value={profileId}
@@ -105,7 +107,7 @@ export default function Register() {
                 </option>
               ))}
             </select>
-          </div> */}
+          </div>
 
           <Button text="Cadastrar" onClick={handleRegister} />
         </div>
