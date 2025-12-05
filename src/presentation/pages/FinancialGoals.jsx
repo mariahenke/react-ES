@@ -1,19 +1,94 @@
-import { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+
+import {
+  listGoals,
+  createGoal,
+  updateGoal,
+  deleteGoal,
+} from "../../infrastructure/services/GoalService.js";
 
 import ReaderLayout from "../../presentation/components/RenderLayout";
 import { AuthContext } from "../contexts/AuthContext";
-import { AuthService } from "../../infrastructure/services/AuthService";
+import authService from "../../infrastructure/services/AuthService";
 
-export default function FinancialGoals() {
+export default function MetasFinanceiras() {
   const [goals, setGoals] = useState([]);
-  const [newGoal, setNewGoal] = useState("");
-  const [newAmount, setNewAmount] = useState("");
-  const [editingIndex, setEditingIndex] = useState(null);
+  const [editingGoal, setEditingGoal] = useState(null);
+  const [form, setForm] = useState({ title: "", amount: "" });
 
   const { user, loading } = useContext(AuthContext);
-  const authService = new AuthService();
+
+  const userId = localStorage.getItem("userId");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    loadGoals();
+  }, []);
+
+  async function loadGoals() {
+    try {
+      const response = await listGoals(userId);
+      setGoals(response);
+    } catch (err) {
+      toast.error("Erro ao carregar metas");
+    }
+  }
+
+  async function handleSubmit() {
+    if (!form.title || !form.amount) {
+      toast.error("Preencha todos os campos");
+      return;
+    }
+
+    const parsedAmount = parseFloat(form.amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      toast.error("Valor inválido");
+      return;
+    }
+
+    if (!userId) {
+      toast.error("Usuário não identificado");
+      return;
+    }
+
+    const payload = { title: form.title, amount: parsedAmount, userId };
+
+    try {
+      if (editingGoal) {
+        await updateGoal(editingGoal.id, payload);
+        toast.success("Meta atualizada!");
+      } else {
+        await createGoal(payload);
+        toast.success("Meta criada!");
+      }
+
+      setForm({ title: "", amount: "" });
+      setEditingGoal(null);
+      loadGoals();
+    } catch (err) {
+      console.error("Erro ao salvar meta:", err.response?.data || err.message);
+      toast.error("Erro ao salvar meta");
+    }
+  }
+
+  async function handleDelete(id) {
+    if (!confirm("Deseja excluir esta meta?")) return;
+
+    try {
+      await deleteGoal(id);
+      toast.success("Meta excluída!");
+      loadGoals();
+    } catch (err) {
+      toast.error("Erro ao excluir meta");
+    }
+  }
+
+  function startEdit(goal) {
+    setEditingGoal(goal);
+    setForm({ title: goal.title, amount: goal.amount });
+  }
 
   if (loading) {
     return <div style={{ padding: 20 }}>Carregando...</div>;
@@ -23,116 +98,60 @@ export default function FinancialGoals() {
     return <div style={{ padding: 20 }}>Usuário não autenticado.</div>;
   }
 
-  useEffect(() => {
-    const stored = localStorage.getItem("financialGoals");
-    if (stored) setGoals(JSON.parse(stored));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("financialGoals", JSON.stringify(goals));
-  }, [goals]);
-
-  const handleSave = () => {
-    if (!newGoal.trim() || !newAmount.trim()) {
-      toast.error("Preencha todos os campos!");
-      return;
-    }
-
-    const amount = parseFloat(newAmount);
-    if (isNaN(amount) || amount <= 0) {
-      toast.error("Informe um valor válido!");
-      return;
-    }
-
-    const newData = { goal: newGoal, amount };
-
-    if (editingIndex !== null) {
-      const updated = [...goals];
-      updated[editingIndex] = newData;
-      setGoals(updated);
-      toast.success("Meta atualizada com sucesso!");
-    } else {
-      setGoals([...goals, newData]);
-      toast.success("Meta adicionada!");
-    }
-
-    setNewGoal("");
-    setNewAmount("");
-    setEditingIndex(null);
-  };
-
-  const handleDelete = (index) => {
-    const updated = goals.filter((_, i) => i !== index);
-    setGoals(updated);
-    toast.info("Meta removida.");
-  };
-
-  const handleEdit = (index) => {
-    setNewGoal(goals[index].goal);
-    setNewAmount(goals[index].amount);
-    setEditingIndex(index);
-  };
-
   return (
     <ReaderLayout user={user} onLogout={() => authService.logout()}>
       <div style={styles.container}>
         <div style={styles.card}>
-          <h2 style={styles.title}>Definição de Metas Financeiras</h2>
+          <h1 style={styles.title}>Metas Financeiras</h1>
 
-          <label style={styles.label}>Meta</label>
           <input
-            type="text"
-            placeholder="Ex: Comprar um carro"
-            value={newGoal}
-            onChange={(e) => setNewGoal(e.target.value)}
+            placeholder="Título da meta"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
             style={styles.input}
           />
 
-          <label style={styles.label}>Valor (R$)</label>
           <input
+            placeholder="Valor desejado (R$)"
             type="number"
-            placeholder="Ex: 50000"
-            value={newAmount}
-            onChange={(e) => setNewAmount(e.target.value)}
+            value={form.amount}
+            onChange={(e) => setForm({ ...form, amount: e.target.value })}
             style={styles.input}
           />
 
-          <button onClick={handleSave} style={styles.button}>
-            {editingIndex !== null ? "Atualizar Meta" : "Adicionar Meta"}
+          <button style={styles.button} onClick={handleSubmit}>
+            {editingGoal ? "Salvar alterações" : "Adicionar meta"}
           </button>
 
-          <div style={styles.goalsList}>
-            {goals.length === 0 ? (
-              <p style={styles.emptyText}>Nenhuma meta cadastrada ainda.</p>
-            ) : (
-              goals.map((item, index) => (
-                <div key={index} style={styles.goalItem}>
-                  <div>
-                    <strong>{item.goal}</strong>
-                    <p>R$ {item.amount.toLocaleString("pt-BR")}</p>
-                  </div>
-                  <div>
-                    <button
-                      onClick={() => handleEdit(index)}
-                      style={styles.editButton}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(index)}
-                      style={styles.deleteButton}
-                    >
-                      Excluir
-                    </button>
-                  </div>
+          <ul style={styles.list}>
+            {goals.map((goal) => (
+              <li key={goal.id} style={styles.listItem}>
+                <div>
+                  <strong>{goal.title}</strong> — R$ {goal.amount}
                 </div>
-              ))
-            )}
-          </div>
 
-          <p style={styles.linkText}>
-            <Link to="/home">Voltar para Home</Link>
-          </p>
+                <div style={styles.actions}>
+                  <button
+                    style={styles.editButton}
+                    onClick={() => startEdit(goal)}
+                  >
+                    Editar
+                  </button>
+
+                  <button
+                    style={styles.deleteButton}
+                    onClick={() => handleDelete(goal.id)}
+                  >
+                    Excluir
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <button style={styles.backButton} onClick={() => navigate("/Home")}>
+            ← Voltar para Home
+          </button>
         </div>
       </div>
     </ReaderLayout>
@@ -141,83 +160,76 @@ export default function FinancialGoals() {
 
 const styles = {
   container: {
-    backgroundColor: "#f7f7ff",
-    height: "100%",
+    background: "#f3f4f6",
+    minHeight: "100vh",
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
     padding: "40px 0",
   },
   card: {
-    backgroundColor: "#cbb3ff",
-    padding: "40px",
-    borderRadius: "10px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-    width: "400px",
-    textAlign: "center",
-    maxHeight: "90vh",
-    overflowY: "auto",
+    background: "#d7c4ff",
+    padding: "30px",
+    width: "480px",
+    borderRadius: "20px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
   },
   title: {
-    fontSize: "22px",
-    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: "1.8rem",
     marginBottom: "20px",
   },
-  label: { display: "block", textAlign: "left", marginBottom: "5px" },
   input: {
     width: "100%",
-    padding: "10px",
-    borderRadius: "5px",
+    padding: "12px",
+    borderRadius: "10px",
     border: "none",
-    marginBottom: "20px",
+    marginBottom: "12px",
   },
   button: {
     width: "100%",
-    padding: "10px",
-    backgroundColor: "#12111f",
+    background: "#1d4ed8",
     color: "#fff",
+    padding: "12px",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "10px",
+    fontSize: "1rem",
     cursor: "pointer",
     marginBottom: "20px",
   },
-  goalsList: {
-    marginTop: "10px",
-    textAlign: "left",
-  },
-  goalItem: {
-    backgroundColor: "#f1e7ff",
-    padding: "10px",
-    borderRadius: "5px",
+  list: { listStyle: "none", padding: 0 },
+  listItem: {
+    background: "#fff",
+    padding: "15px",
+    borderRadius: "10px",
     marginBottom: "10px",
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
   },
+  actions: { display: "flex", gap: "10px" },
   editButton: {
-    backgroundColor: "#12111f",
+    background: "#7c3aed",
     color: "#fff",
     border: "none",
-    borderRadius: "4px",
-    padding: "5px 10px",
-    marginRight: "5px",
+    padding: "6px 10px",
+    borderRadius: "8px",
     cursor: "pointer",
   },
   deleteButton: {
-    backgroundColor: "#ff5252",
+    background: "#dc2626",
     color: "#fff",
     border: "none",
-    borderRadius: "4px",
-    padding: "5px 10px",
+    padding: "6px 10px",
+    borderRadius: "8px",
     cursor: "pointer",
   },
-  emptyText: {
-    color: "#444",
-    fontStyle: "italic",
-    textAlign: "center",
-  },
-  linkText: {
-    marginTop: "15px",
-    fontSize: "14px",
+  backButton: {
+    marginTop: "20px",
+    background: "#6b7280",
+    color: "#fff",
+    padding: "10px",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    width: "100%",
   },
 };
