@@ -5,7 +5,10 @@ import { AuthContext } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBullseye, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBullseye,
+  faRightFromBracket,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { AuthService } from "../../infrastructure/services/AuthService";
 
@@ -37,14 +40,12 @@ export default function Home() {
 
   return (
     <div style={styles.container}>
-
       {/* Sidebar */}
       {menuOpen && (
         <aside style={styles.sidebar}>
           <h2 style={styles.sidebarTitle}>Savify</h2>
 
           <nav style={styles.nav}>
-
             <Link to="/goals" style={styles.link}>
               <FontAwesomeIcon icon={faBullseye} style={styles.icon} />
               Metas Financeiras
@@ -54,7 +55,6 @@ export default function Home() {
               <FontAwesomeIcon icon={faRightFromBracket} style={styles.icon} />
               Sair
             </button>
-
           </nav>
         </aside>
       )}
@@ -213,4 +213,3 @@ const styles = {
     overflowY: "auto",
   },
 };
-
