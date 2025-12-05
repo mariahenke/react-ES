@@ -14,25 +14,28 @@ const DEFAULT_COLORS = [
   "#36A2EB",
 ];
 
-export default function ExpenseChart() {
+export default function ExpenseChart({ refresh }) {
   const { user } = useContext(AuthContext);
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    if (!user?.id) return; // garante que user existe
+    if (!user?.investor_id) return;
 
     async function loadData() {
       try {
         const [expenses, categories] = await Promise.all([
-          getExpenses(user.id),
+          getExpenses(user.investor_id),
           getCategories(),
         ]);
 
         const grouped = categories
           .map((cat, index) => {
-            const matchedExpenses = expenses.filter((e) => e.category_id === cat.id);
+            const matchedExpenses = expenses.filter(
+              (e) => e.category_id === cat.id
+            );
+
             const total = matchedExpenses.reduce(
-              (acc, e) => acc + parseFloat(e.value || 0),
+              (acc, e) => acc + Number(e.value || 0),
               0
             );
 
@@ -51,7 +54,7 @@ export default function ExpenseChart() {
     }
 
     loadData();
-  }, [user]); // roda quando user estiver disponível
+  }, [user, refresh]);
 
   if (!data.length) {
     return (
@@ -80,7 +83,7 @@ export default function ExpenseChart() {
               <Cell key={index} fill={entry.color} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => `R$ ${parseFloat(value).toFixed(2)}`} />
+          <Tooltip formatter={(value) => `R$ ${Number(value).toFixed(2)}`} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>

@@ -10,6 +10,8 @@ import ResetPasswordEmail from "../pages/ResetPasswordEmail.jsx";
 import ResetPasswordCode from "../pages/ResetPasswordCode.jsx";
 import ResetPasswordNew from "../pages/ResetPasswordNew.jsx";
 import FinancialGoals from "../pages/FinancialGoals.jsx";
+import User from "../pages/UserPage.jsx";
+import Simulation from "../pages/SimulationPage.jsx";
 
 export default function AppRoutes() {
   return (
@@ -22,6 +24,8 @@ export default function AppRoutes() {
         <Route path="/reset-password/code" element={<ResetPasswordCode />} />
         <Route path="/reset-password/new" element={<ResetPasswordNew />} />
         <Route path="/goals" element={<FinancialGoals />} />
+        <Route path="/user" element={<User />} />
+        <Route path="/simulation" element={<Simulation />} />
       </Routes>
 
       <ToastContainer

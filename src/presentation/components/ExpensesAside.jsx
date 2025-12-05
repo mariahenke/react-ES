@@ -8,7 +8,7 @@ import {
 import ExpenseModal from "./ExpenseModal";
 import { AuthContext } from "../contexts/AuthContext";
 
-export default function ExpensesAside() {
+export default function ExpensesAside( { onChange }) {
   const [expenses, setExpenses] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -16,12 +16,12 @@ export default function ExpensesAside() {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    if (user?.id) loadExpenses();
+    if (user?.investor_id) loadExpenses();
   }, [user]);
 
   async function loadExpenses() {
     try {
-      const data = await getExpenses(user.id);
+      const data = await getExpenses(user.investor_id);
       setExpenses(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Erro ao carregar despesas:", err);
@@ -31,11 +31,17 @@ export default function ExpensesAside() {
 
   async function handleSave(data) {
     try {
-      if (editing) await updateExpense(editing.id, data);
-      else await createExpense(data);
+      if (editing) {
+        await updateExpense(user.investor_id, editing.id, data);
+      } else {
+        await createExpense(user.investor_id, data);
+      }
+
       setOpenModal(false);
       setEditing(null);
       loadExpenses();
+
+      onChange && onChange();
     } catch (e) {
       console.error("Erro ao salvar despesa:", e);
     }
@@ -43,8 +49,10 @@ export default function ExpensesAside() {
 
   async function handleDelete(id) {
     if (window.confirm("Deseja excluir esta despesa?")) {
-      await deleteExpense(id);
+      await deleteExpense(user.investor_id, id);
       loadExpenses();
+
+      onChange && onChange();
     }
   }
 
@@ -85,8 +93,13 @@ export default function ExpensesAside() {
             </div>
 
             <div style={styles.itemBody}>
-              <span style={styles.value}>R$ {parseFloat(exp.value).toFixed(2)}</span>
-              <small style={styles.category}>{exp.category_name}</small>
+              <span style={styles.value}>
+                R$ {parseFloat(exp.value).toFixed(2)}
+              </span>
+
+              <small style={styles.category}>
+                {exp.category?.name ?? "Sem categoria"}
+              </small>
             </div>
           </div>
         ))}
@@ -105,7 +118,7 @@ export default function ExpensesAside() {
   );
 }
 
-// 🎨 ESTILOS MODERNOS
+
 const styles = {
   aside: {
     width: "340px",
@@ -113,10 +126,12 @@ const styles = {
     borderLeft: "1px solid #e5e5e5",
     padding: "20px 18px",
     overflowY: "auto",
-    height: "100vh",
+    height: "78vh",
     display: "flex",
     flexDirection: "column",
     gap: "20px",
+    borderRadius: "8px",
+    margin: "0px 10px"
   },
 
   header: {
@@ -134,6 +149,7 @@ const styles = {
   },
 
   newButton: {
+    width: "6vw",
     background: "#1e88e5",
     color: "#fff",
     border: "none",

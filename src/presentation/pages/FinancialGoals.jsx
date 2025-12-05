@@ -1,6 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+
+import ReaderLayout from "../../presentation/components/RenderLayout";
+import { AuthContext } from "../contexts/AuthContext";
+import { AuthService } from "../../infrastructure/services/AuthService";
 
 export default function FinancialGoals() {
   const [goals, setGoals] = useState([]);
@@ -8,18 +12,26 @@ export default function FinancialGoals() {
   const [newAmount, setNewAmount] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
 
-  // Carrega metas salvas ao iniciar
+  const { user, loading } = useContext(AuthContext);
+  const authService = new AuthService();
+
+  if (loading) {
+    return <div style={{ padding: 20 }}>Carregando...</div>;
+  }
+
+  if (!user) {
+    return <div style={{ padding: 20 }}>Usuário não autenticado.</div>;
+  }
+
   useEffect(() => {
     const stored = localStorage.getItem("financialGoals");
     if (stored) setGoals(JSON.parse(stored));
   }, []);
 
-  // Salva metas sempre que houver mudanças
   useEffect(() => {
     localStorage.setItem("financialGoals", JSON.stringify(goals));
   }, [goals]);
 
-  // Adicionar ou editar meta
   const handleSave = () => {
     if (!newGoal.trim() || !newAmount.trim()) {
       toast.error("Preencha todos os campos!");
@@ -49,14 +61,12 @@ export default function FinancialGoals() {
     setEditingIndex(null);
   };
 
-  // Excluir meta
   const handleDelete = (index) => {
     const updated = goals.filter((_, i) => i !== index);
     setGoals(updated);
     toast.info("Meta removida.");
   };
 
-  // Editar meta
   const handleEdit = (index) => {
     setNewGoal(goals[index].goal);
     setNewAmount(goals[index].amount);
@@ -64,77 +74,79 @@ export default function FinancialGoals() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>Definição de Metas Financeiras</h2>
+    <ReaderLayout user={user} onLogout={() => authService.logout()}>
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <h2 style={styles.title}>Definição de Metas Financeiras</h2>
 
-        <label style={styles.label}>Meta</label>
-        <input
-          type="text"
-          placeholder="Ex: Comprar um carro"
-          value={newGoal}
-          onChange={(e) => setNewGoal(e.target.value)}
-          style={styles.input}
-        />
+          <label style={styles.label}>Meta</label>
+          <input
+            type="text"
+            placeholder="Ex: Comprar um carro"
+            value={newGoal}
+            onChange={(e) => setNewGoal(e.target.value)}
+            style={styles.input}
+          />
 
-        <label style={styles.label}>Valor (R$)</label>
-        <input
-          type="number"
-          placeholder="Ex: 50000"
-          value={newAmount}
-          onChange={(e) => setNewAmount(e.target.value)}
-          style={styles.input}
-        />
+          <label style={styles.label}>Valor (R$)</label>
+          <input
+            type="number"
+            placeholder="Ex: 50000"
+            value={newAmount}
+            onChange={(e) => setNewAmount(e.target.value)}
+            style={styles.input}
+          />
 
-        <button onClick={handleSave} style={styles.button}>
-          {editingIndex !== null ? "Atualizar Meta" : "Adicionar Meta"}
-        </button>
+          <button onClick={handleSave} style={styles.button}>
+            {editingIndex !== null ? "Atualizar Meta" : "Adicionar Meta"}
+          </button>
 
-        <div style={styles.goalsList}>
-          {goals.length === 0 ? (
-            <p style={styles.emptyText}>Nenhuma meta cadastrada ainda.</p>
-          ) : (
-            goals.map((item, index) => (
-              <div key={index} style={styles.goalItem}>
-                <div>
-                  <strong>{item.goal}</strong>
-                  <p>R$ {item.amount.toLocaleString("pt-BR")}</p>
+          <div style={styles.goalsList}>
+            {goals.length === 0 ? (
+              <p style={styles.emptyText}>Nenhuma meta cadastrada ainda.</p>
+            ) : (
+              goals.map((item, index) => (
+                <div key={index} style={styles.goalItem}>
+                  <div>
+                    <strong>{item.goal}</strong>
+                    <p>R$ {item.amount.toLocaleString("pt-BR")}</p>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => handleEdit(index)}
+                      style={styles.editButton}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      style={styles.deleteButton}
+                    >
+                      Excluir
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <button
-                    onClick={() => handleEdit(index)}
-                    style={styles.editButton}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(index)}
-                    style={styles.deleteButton}
-                  >
-                    Excluir
-                  </button>
-                </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
+
+          <p style={styles.linkText}>
+            <Link to="/home">Voltar para Home</Link>
+          </p>
         </div>
-
-        <p style={styles.linkText}>
-          <Link to="/home">Voltar para Home</Link>
-        </p>
       </div>
-    </div>
+    </ReaderLayout>
   );
 }
 
-// 💅 Estilo idêntico às outras telas
 const styles = {
   container: {
     backgroundColor: "#f7f7ff",
-    height: "100vh",
+    height: "100%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    padding: "40px 0",
   },
   card: {
     backgroundColor: "#cbb3ff",

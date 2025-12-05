@@ -1,15 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { getCategories } from "../../infrastructure/services/ExpenseService";
+import { AuthContext } from "../contexts/AuthContext";
 
 export default function ExpenseModal({ open, onClose, onSave, expense }) {
-  const [form, setForm] = useState({
-    name: "",
-    value: "",
-    expense_category_id: "",
-    description: "",
-    expense_date: new Date().toISOString().slice(0, 10),
-  });
+  const { user } = useContext(AuthContext);
 
+  const [form, setForm] = useState(null);
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -17,18 +13,28 @@ export default function ExpenseModal({ open, onClose, onSave, expense }) {
   }, []);
 
   useEffect(() => {
-    if (expense) setForm(expense);
-    else
+    if (!user) return;
+
+    if (expense) {
+      setForm({
+        name: expense.name,
+        value: expense.value,
+        category_id: expense.category_id,
+        description: expense.description,
+        expense_date: expense.expense_date.substring(0, 10),
+      });
+    } else {
       setForm({
         name: "",
         value: "",
-        expense_category_id: "",
+        category_id: "",
         description: "",
         expense_date: new Date().toISOString().slice(0, 10),
       });
-  }, [expense]);
+    }
+  }, [expense, user]);
 
-  if (!open) return null;
+  if (!open || !form) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +43,7 @@ export default function ExpenseModal({ open, onClose, onSave, expense }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(form);
+    onSave(form, user.investor_id);
   };
 
   return (
@@ -74,8 +80,8 @@ export default function ExpenseModal({ open, onClose, onSave, expense }) {
           <div style={styles.inputGroup}>
             <label>Categoria</label>
             <select
-              name="expense_category_id"
-              value={form.expense_category_id}
+              name="category_id"
+              value={form.category_id}
               onChange={handleChange}
               required
               style={styles.select}
@@ -126,9 +132,6 @@ export default function ExpenseModal({ open, onClose, onSave, expense }) {
   );
 }
 
-//
-//  STYLES
-//
 const sharedField = {
   width: "100%",
   padding: "12px",
@@ -152,19 +155,18 @@ const styles = {
     backdropFilter: "blur(3px)",
   },
 
-modal: {
-  background: "white",
-  padding: "32px",
-  borderRadius: "18px",
-  width: "480px",
-  maxWidth: "90%",
-  boxShadow: "0px 12px 35px rgba(0,0,0,0.15)",
-  animation: "fadeIn 0.25s ease",
-  display: "flex",
-  flexDirection: "column",
-  gap: "20px",
-},
-
+  modal: {
+    background: "white",
+    padding: "32px",
+    borderRadius: "18px",
+    width: "480px",
+    maxWidth: "90%",
+    boxShadow: "0px 12px 35px rgba(0,0,0,0.15)",
+    animation: "fadeIn 0.25s ease",
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+  },
 
   title: {
     margin: "0 0 20px 0",

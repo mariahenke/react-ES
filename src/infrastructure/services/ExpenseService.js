@@ -1,34 +1,30 @@
-// src/infrastructure/services/ExpenseService.js
 import { expenseApi } from "../../api/expenseApi.js";
 
-export async function getExpenses(userId) {
-  console.log('userId');
-  console.log(userId);
-  const response = await expenseApi.getAll(userId);
+export async function getExpenses(investorId) {
+  const response = await expenseApi.getAll(investorId);
   return response.data;
 }
 
-export async function getExpenseById(id) {
-  const response = await expenseApi.getById(id);
+export async function getExpenseById(investorId, id) {
+  const response = await expenseApi.getById(investorId, id);
   return response.data;
 }
 
-export async function createExpense(data) {
-  const response = await expenseApi.create(data);
+export async function createExpense(investorId, data) {
+  const response = await expenseApi.create(investorId, data);
   return response.data;
 }
 
-export async function updateExpense(id, data) {
-  const response = await expenseApi.update(id, data);
+export async function updateExpense(investorId, id, data) {
+  const response = await expenseApi.update(investorId, id, data);
   return response.data;
 }
 
-export async function deleteExpense(id) {
-  const response = await expenseApi.delete(id);
+export async function deleteExpense(investorId, id) {
+  const response = await expenseApi.delete(investorId, id);
   return response.data;
 }
 
-// (Novo) para o select de categorias:
 import { categoryApi } from "../../api/categoryApi.js";
 
 export async function getCategories() {
